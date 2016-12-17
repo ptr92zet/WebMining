@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,11 +21,13 @@ public class HtmlParser {
     private String baseUrl;
     private String charset;
     private String txtContent;
+    private ArrayList<String> words;
 
     public HtmlParser(String htmlFilePath, String charset, String baseUrl) {
         this.htmlFile = Paths.get(htmlFilePath);
         this.charset = charset;
         this.baseUrl = baseUrl;
+        this.words = new ArrayList<>(); 
     }
 
     public void parse(String txtFilePath) throws IOException {
@@ -40,9 +43,20 @@ public class HtmlParser {
 
         txtContent = cleanedHead + cleanedBody;
         txtContent = processText(txtContent);
+        createWordList(txtContent);
         writeProcessedFile(txtContent);
     }
 
+    public ArrayList<String> getWordList() {
+        return this.words;
+    }
+    
+    private void createWordList(String text) {
+        for (String word : text.split(" ")) {
+            words.add(word);
+        }
+    }
+    
     private String processText(String text) {
         text = text.toLowerCase();
         text = text.replaceAll("[.,:;-]", " ");
