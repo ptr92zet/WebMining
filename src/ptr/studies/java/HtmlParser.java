@@ -1,7 +1,9 @@
 package ptr.studies.java;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -10,37 +12,65 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
-import org.jsoup.select.Elements;
 
 public class HtmlParser {
 
-    private String htmlContent;
-    private String txtContent;
-    private Document doc;
-
+    private Path htmlFile;
     private Path txtFile;
-            
-    public HtmlParser(String htmlContent, String txtFilePath) {
-        this.htmlContent = htmlContent;
-        this.txtFile = Paths.get(txtFilePath);
+    private String baseUrl;
+    private String charset;
+    private String txtContent;
+
+    public HtmlParser(String htmlFilePath, String charset, String baseUrl) {
+        this.htmlFile = Paths.get(htmlFilePath);
+        this.charset = charset;
+        this.baseUrl = baseUrl;
     }
 
-    public void parse() throws IOException {
-        //String cleanedContent = Jsoup.clean(htmlContent, "", new Whitelist().none(), new OutputSettings().prettyPrint(false));
-        doc = Jsoup.parse(htmlContent);
+    public void parse(String txtFilePath) throws IOException {
+        txtFile = Paths.get(txtFilePath);
+        Document doc = Jsoup.parse(htmlFile.toFile(), charset, baseUrl);
+
         Element head = doc.head();
         Element body = doc.body();
-        String cleanedHead = Jsoup.clean(head.text(), "", new Whitelist().none(), new OutputSettings().prettyPrint(false));
-        String cleanedBody = Jsoup.clean(body.text(), "", new Whitelist().none(), new OutputSettings().prettyPrint(false));
+        String cleanedHead = Jsoup.clean(head.text(), baseUrl, new Whitelist().none(),
+                new OutputSettings().prettyPrint(false));
+        String cleanedBody = Jsoup.clean(body.text(), baseUrl, new Whitelist().none(),
+                new OutputSettings().prettyPrint(false));
+
         txtContent = cleanedHead + cleanedBody;
-        saveToFile();
+        txtContent = processText(txtContent);
+        writeProcessedFile(txtContent);
     }
-    
-    private void saveToFile() throws IOException {
-        if (!Files.exists(txtFile)) {
-            Files.createFile(txtFile);
+
+    private String processText(String text) {
+        text = text.toLowerCase();
+        text = text.replaceAll("[.,:;-]", " ");
+        text = text.replaceAll("[!?–]", " ");
+        text = text.replaceAll("[()]", " ");
+        text = text.replaceAll("[\\[\\]]", " ");
+        text = text.replaceAll("[{}]", " ");
+        text = text.replaceAll("[<>]", " ");
+        text = text.replaceAll("\\.\\.\\.", " ");
+        text = text.replaceAll("…", " ");
+        text = text.replaceAll("\\s+", " ");
+        return text;
+    }
+
+    private void writeProcessedFile(String content) {
+        PrintWriter writer = null;
+
+        try {
+            writer = new PrintWriter(txtFile.toString(), charset);
+            writer.write(content);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
         }
-        Files.write(txtFile, this.txtContent.getBytes());
     }
-    
 }

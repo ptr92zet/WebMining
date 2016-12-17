@@ -1,22 +1,13 @@
 package ptr.studies.java;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JButton;
-import javax.swing.JTextPane;
-
-import org.jsoup.Jsoup;
-
 import java.awt.Font;
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-
-import javax.swing.Action;
 
 public class WebMiningMainWindow {
 
@@ -24,23 +15,22 @@ public class WebMiningMainWindow {
     private JTextField urlField;
     private HtmlDownloader downloader;
     private HtmlParser parser;
-    private final String targetFilePath = System.getProperty("user.home") + "/Desktop/test.html";
-    private final String txtFilePath = System.getProperty("user.home") + "/Desktop/test.txt";
-    private final String processedFilePath = System.getProperty("user.home") + "/Desktop/test_processed.txt";
+    private final String htmlPath = System.getProperty("user.home") + "\\Desktop\\test.html";
+    private final String txtPath = System.getProperty("user.home") + "\\Desktop\\test.txt";
+    private JTextField htmlPathField;
+    private JTextField txtPathField;
 
     /**
      * Create the application.
      */
     public WebMiningMainWindow() {
         initialize();
-        this.downloader = new HtmlDownloader(targetFilePath, txtFilePath, processedFilePath);
     }
 
     /**
      * Initialize the contents of the frame.
      */
     private void initialize() {
-        System.out.println(System.getProperty("user.home"));
         frmWebminingApplication = new JFrame();
         frmWebminingApplication.setFont(new Font("Segoe Script", Font.PLAIN, 11));
         frmWebminingApplication.setTitle("WebMining Application");
@@ -60,32 +50,48 @@ public class WebMiningMainWindow {
         frmWebminingApplication.getContentPane().add(urlLabel);
 
         JButton downloadButton = new JButton("Download webpage as .html");
+        downloadButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        downloadButton.setBounds(10, 206, 414, 30);
+        frmWebminingApplication.getContentPane().add(downloadButton);
+
+        JLabel htmlFilePathLabel = new JLabel(".html file path on disk:");
+        htmlFilePathLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        htmlFilePathLabel.setBounds(10, 78, 141, 19);
+        frmWebminingApplication.getContentPane().add(htmlFilePathLabel);
+
+        htmlPathField = new JTextField();
+        htmlPathField.setText(htmlPath);
+        htmlPathField.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        htmlPathField.setColumns(10);
+        htmlPathField.setBounds(10, 98, 414, 30);
+        frmWebminingApplication.getContentPane().add(htmlPathField);
+
+        JLabel txtFilePathLabel = new JLabel(".txt file path on disk:");
+        txtFilePathLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        txtFilePathLabel.setBounds(10, 139, 141, 19);
+        frmWebminingApplication.getContentPane().add(txtFilePathLabel);
+
+        txtPathField = new JTextField();
+        txtPathField.setText(txtPath);
+        txtPathField.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        txtPathField.setColumns(10);
+        txtPathField.setBounds(10, 155, 414, 30);
+        frmWebminingApplication.getContentPane().add(txtPathField);
+        frmWebminingApplication.setVisible(true);
+
         downloadButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    downloader.download(urlField.getText());
-                    downloader.parseHtmlToTxt();
-                    downloader.processTxtFile();
-//                    parser = new HtmlParser(content, txtFilePath);
-//                    parser.parse();
+                    downloader = new HtmlDownloader(urlField.getText());
+                    downloader.download(htmlPathField.getText());
+                    parser = new HtmlParser(htmlPathField.getText(), downloader.getCharset(), urlField.getText());
+                    parser.parse(txtPathField.getText());
                 } catch (IOException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
             }
         });
-        downloadButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        downloadButton.setBounds(10, 74, 414, 30);
-        frmWebminingApplication.getContentPane().add(downloadButton);
-
-        JTextPane logTextPane = new JTextPane();
-        logTextPane.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        logTextPane.setEnabled(false);
-        logTextPane.setText("Logs from downloading webpage...");
-        logTextPane.setBounds(10, 117, 414, 134);
-        frmWebminingApplication.getContentPane().add(logTextPane);
-        frmWebminingApplication.setVisible(true);
     }
 }
