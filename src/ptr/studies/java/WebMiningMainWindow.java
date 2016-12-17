@@ -15,6 +15,7 @@ public class WebMiningMainWindow {
     private JTextField urlField;
     private HtmlDownloader downloader;
     private HtmlParser parser;
+    private WordSorter sorter;
     private final String htmlPath = System.getProperty("user.home") + "\\Desktop\\test.html";
     private final String txtPath = System.getProperty("user.home") + "\\Desktop\\test.txt";
     private JTextField htmlPathField;
@@ -88,6 +89,8 @@ public class WebMiningMainWindow {
                     downloader.download(htmlPathField.getText());
                     parser = new HtmlParser(htmlPathField.getText(), downloader.getCharset(), urlField.getText());
                     parser.parse(txtPathField.getText());
+                    sorter = new WordSorter(parser.getWordList(), 5, 10);
+                    sorter.sortNaive();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }

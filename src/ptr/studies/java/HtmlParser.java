@@ -67,6 +67,9 @@ public class HtmlParser {
         text = text.replaceAll("[<>]", " ");
         text = text.replaceAll("\\.\\.\\.", " ");
         text = text.replaceAll("…", " ");
+        text = text.replaceAll("\"", "");
+        
+        // replace all consecutive whitespaces, tabs, newlines etc. with only one space 
         text = text.replaceAll("\\s+", " ");
         return text;
     }
