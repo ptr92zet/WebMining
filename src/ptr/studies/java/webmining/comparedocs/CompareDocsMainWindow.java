@@ -25,12 +25,16 @@ import javax.swing.JTextArea;
 
 import ptr.studies.java.webmining.html.HtmlDownloader;
 import ptr.studies.java.webmining.html.HtmlParser;
+import ptr.studies.java.webmining.utils.SimpleWordCounter;
 
 import javax.swing.JProgressBar;
 
 public class CompareDocsMainWindow {
 
     private JFrame frmComparedocsApplication;
+    JProgressBar downloadProgressBar;
+    JProgressBar compareProgressBar;
+    
     private ArrayList<String> zoologyLinks;
     private ArrayList<String> musicLinks;
     private ArrayList<String> itLinks;
@@ -45,7 +49,7 @@ public class CompareDocsMainWindow {
     private int compareProgressCount;
     private int documentsCount;
 
-    private HashMap<String, ArrayList<String>> words;
+    private HashMap<String, HashMap<String, Integer>> uniqueWordsForDoc;
     
     /**
      * Create the application.
@@ -103,7 +107,7 @@ public class CompareDocsMainWindow {
      * Initialize the contents of the frame.
      */
     private void initialize() {
-        words = new HashMap<>();
+        uniqueWordsForDoc = new HashMap<>();
         
         frmComparedocsApplication = new JFrame();
         frmComparedocsApplication.setTitle("CompareDocs Application");
@@ -404,14 +408,14 @@ public class CompareDocsMainWindow {
         compareProgressLabel.setBounds(372, 207, 134, 14);
         mainPanel.add(compareProgressLabel);
         
-        JProgressBar downloadProgressBar = new JProgressBar();
+        downloadProgressBar = new JProgressBar();
         downloadProgressBar.setStringPainted(true);
         downloadProgressBar.setBounds(372, 175, 146, 14);
         downloadProgressBar.setMinimum(0);
         downloadProgressBar.setMaximum(documentsCount);
         mainPanel.add(downloadProgressBar);
         
-        JProgressBar compareProgressBar = new JProgressBar();
+        compareProgressBar = new JProgressBar();
         compareProgressBar.setStringPainted(true);
         compareProgressBar.setMinimum(0);
         compareProgressBar.setMaximum(0);
@@ -429,17 +433,7 @@ public class CompareDocsMainWindow {
                 
                 for (int i=0; i<zoologyLinks.size(); i++) {
                     try {
-                        String link = zoologyLinks.get(i);
-                        String htmlFilePath = zoologyHtmlFiles.get(i);
-                        String txtFilePath = htmlFilePath.substring(0, htmlFilePath.lastIndexOf(".")+1) + "txt";
-                        System.out.println(txtFilePath);
-                        HtmlDownloader downloader = new HtmlDownloader(link);
-                        downloader.download(htmlFilePath);
-                        HtmlParser parser = new HtmlParser(htmlFilePath, downloader.getCharset(), link);
-                        parser.parse(txtFilePath);
-                        words.put(link, parser.getWordList());
-                        downloadProgressCount++;
-                        downloadProgressBar.setValue(downloadProgressCount);
+                        processDocument(zoologyLinks.get(i), zoologyHtmlFiles.get(i));
                     } catch (MalformedURLException e1) {
                         e1.printStackTrace();
                     } catch (IOException e1) {
@@ -449,17 +443,7 @@ public class CompareDocsMainWindow {
                 
                 for (int i=0; i<musicLinks.size(); i++) {
                     try {
-                        String link = musicLinks.get(i);
-                        String htmlFilePath = musicHtmlFiles.get(i);
-                        String txtFilePath = htmlFilePath.substring(0, htmlFilePath.lastIndexOf(".")+1) + "txt";
-                        System.out.println(txtFilePath);
-                        HtmlDownloader downloader = new HtmlDownloader(link);
-                        downloader.download(htmlFilePath);
-                        HtmlParser parser = new HtmlParser(htmlFilePath, downloader.getCharset(), link);
-                        parser.parse(txtFilePath);
-                        words.put(link, parser.getWordList());
-                        downloadProgressCount++;
-                        downloadProgressBar.setValue(downloadProgressCount);
+                        processDocument(musicLinks.get(i), musicHtmlFiles.get(i));
                     } catch (MalformedURLException e1) {
                         e1.printStackTrace();
                     } catch (IOException e1) {
@@ -469,17 +453,7 @@ public class CompareDocsMainWindow {
                 
                 for (int i=0; i<itLinks.size(); i++) {
                     try {
-                        String link = itLinks.get(i);
-                        String htmlFilePath = itHtmlFiles.get(i);
-                        String txtFilePath = htmlFilePath.substring(0, htmlFilePath.lastIndexOf(".")+1) + "txt";
-                        System.out.println(txtFilePath);
-                        HtmlDownloader downloader = new HtmlDownloader(link);
-                        downloader.download(htmlFilePath);
-                        HtmlParser parser = new HtmlParser(htmlFilePath, downloader.getCharset(), link);
-                        parser.parse(txtFilePath);
-                        words.put(link, parser.getWordList());
-                        downloadProgressCount++;
-                        downloadProgressBar.setValue(downloadProgressCount);
+                        processDocument(itLinks.get(i), itHtmlFiles.get(i));
                     } catch (MalformedURLException e1) {
                         e1.printStackTrace();
                     } catch (IOException e1) {
@@ -487,9 +461,10 @@ public class CompareDocsMainWindow {
                     }
                 }
                 
-                for (String link : words.keySet()) { 
-                    System.out.println("Link: " + link + " --> words List size: " + words.get(link).size());
+                for (String link : uniqueWordsForDoc.keySet()) { 
+                    System.out.println("Link: " + link + " --> uniqueWordsForDoc List size: " + uniqueWordsForDoc.get(link).size());
                 }
+                
             }
         });
         
@@ -500,8 +475,20 @@ public class CompareDocsMainWindow {
                 // TODO Auto-generated method stub
                 
             }
-        });
-        
-        
+        });        
+    }
+    
+    
+    private void processDocument(String docLink, String docHtmlFile) throws MalformedURLException, IOException {
+        String txtFilePath = docHtmlFile.substring(0, docHtmlFile.lastIndexOf(".")+1) + "txt";
+        System.out.println(txtFilePath);
+        HtmlDownloader downloader = new HtmlDownloader(docLink);
+        downloader.download(docHtmlFile);
+        HtmlParser parser = new HtmlParser(docHtmlFile, downloader.getCharset(), docLink);
+        parser.parse(txtFilePath);
+        SimpleWordCounter wordCounter = new SimpleWordCounter(parser.getWordList());
+        uniqueWordsForDoc.put(docLink, wordCounter.count());
+        downloadProgressCount++;
+        downloadProgressBar.setValue(downloadProgressCount);
     }
 }
