@@ -64,7 +64,6 @@ public class HtmlDownloader {
     private String recognizePageCharser() throws IOException {
         Document doc = Jsoup.connect(url.toString()).get();
         Charset charset = doc.charset();
-        System.out.println("\nPAGE CHARSET: " + charset.toString());
         return charset.toString();
     }
 }

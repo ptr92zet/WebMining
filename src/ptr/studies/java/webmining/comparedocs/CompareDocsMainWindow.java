@@ -11,9 +11,22 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import ptr.studies.java.webmining.html.HtmlDownloader;
+import ptr.studies.java.webmining.html.HtmlParser;
+
+import javax.swing.JProgressBar;
 
 public class CompareDocsMainWindow {
 
@@ -21,22 +34,40 @@ public class CompareDocsMainWindow {
     private ArrayList<String> zoologyLinks;
     private ArrayList<String> musicLinks;
     private ArrayList<String> itLinks;
+    
+    private final String HTML_FILE_PREFIX = System.getProperty("user.home") + "\\Desktop\\webmining_docs\\";
+    private final String HTML_FILE_SUFFIX = ".html";
+    private ArrayList<String> zoologyHtmlFiles;
+    private ArrayList<String> musicHtmlFiles;
+    private ArrayList<String> itHtmlFiles;
+    
+    private int downloadProgressCount;
+    private int compareProgressCount;
+    private int documentsCount;
 
+    private HashMap<String, ArrayList<String>> words;
+    
     /**
      * Create the application.
      */
     public CompareDocsMainWindow() {
-        initializeLinks();
+        initializeLinksAndFiles();
         initialize();
     }
 
-    private void initializeLinks() {
+    private void initializeLinksAndFiles() {
         zoologyLinks = new ArrayList<>();
         zoologyLinks.add("https://en.wikipedia.org/wiki/Elephant");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Giraffe");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Gorilla");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Bear");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Tiger");
+        zoologyHtmlFiles = new ArrayList<>();
+        for (String link : zoologyLinks) {
+            int index = link.lastIndexOf("/") + 1;
+            String fileName = link.substring(index);
+            zoologyHtmlFiles.add(HTML_FILE_PREFIX + fileName + HTML_FILE_SUFFIX);
+        }
         
         musicLinks = new ArrayList<>();
         musicLinks.add("https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart");
@@ -44,6 +75,12 @@ public class CompareDocsMainWindow {
         musicLinks.add("https://en.wikipedia.org/wiki/Antonio_Vivaldi");
         musicLinks.add("https://en.wikipedia.org/wiki/Ludwig_van_Beethoven");
         musicLinks.add("https://en.wikipedia.org/wiki/Fr%C3%A9d%C3%A9ric_Chopin");
+        musicHtmlFiles = new ArrayList<>();
+        for (String link : musicLinks) {
+            int index = link.lastIndexOf("/") + 1;
+            String fileName = link.substring(index);
+            musicHtmlFiles.add(HTML_FILE_PREFIX + fileName + HTML_FILE_SUFFIX);
+        }
         
         itLinks = new ArrayList<>();
         itLinks.add("https://en.wikipedia.org/wiki/Computer");
@@ -51,11 +88,23 @@ public class CompareDocsMainWindow {
         itLinks.add("https://en.wikipedia.org/wiki/Operating_system");
         itLinks.add("https://en.wikipedia.org/wiki/Operating_system");
         itLinks.add("https://en.wikipedia.org/wiki/Computer_programming");
+        itHtmlFiles = new ArrayList<>();
+        for (String link : itLinks) {
+            int index = link.lastIndexOf("/") + 1;
+            String fileName = link.substring(index);
+            itHtmlFiles.add(HTML_FILE_PREFIX + fileName + HTML_FILE_SUFFIX);
+        }
+        
+        documentsCount = zoologyLinks.size() + musicLinks.size() + itLinks.size();
+        downloadProgressCount = 0;
+        compareProgressCount = 0;
     }
     /**
      * Initialize the contents of the frame.
      */
     private void initialize() {
+        words = new HashMap<>();
+        
         frmComparedocsApplication = new JFrame();
         frmComparedocsApplication.setTitle("CompareDocs Application");
         frmComparedocsApplication.setBounds(100, 100, 600, 300);
@@ -326,7 +375,133 @@ public class CompareDocsMainWindow {
         });
         linksPanel.add(itLink5);
         
+        JButton downloadButton = new JButton("Download all documents and create dictionaries");
+        downloadButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        downloadButton.setBounds(12, 154, 348, 40);
+        mainPanel.add(downloadButton);
+        
+        JButton compareButton = new JButton("Compare documents");
+        compareButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        compareButton.setBounds(12, 207, 348, 40);
+        mainPanel.add(compareButton);
+        
+        JTextArea resultsArea = new JTextArea();
+        resultsArea.setBounds(12, 264, 560, 190);
+        //mainPanel.add(resultsArea);
+        
+        JScrollPane scrollPane = new JScrollPane(resultsArea);
+        scrollPane.setVisible(false);
+        scrollPane.setBounds(12, 270, 560, 220);
+        mainPanel.add(scrollPane);
+        
+        JLabel downloadProgressLabelitLinks = new JLabel("Download progress:");
+        downloadProgressLabelitLinks.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        downloadProgressLabelitLinks.setBounds(372, 154, 134, 14);
+        mainPanel.add(downloadProgressLabelitLinks);
+        
+        JLabel compareProgressLabel = new JLabel("Compare progress:");
+        compareProgressLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        compareProgressLabel.setBounds(372, 207, 134, 14);
+        mainPanel.add(compareProgressLabel);
+        
+        JProgressBar downloadProgressBar = new JProgressBar();
+        downloadProgressBar.setStringPainted(true);
+        downloadProgressBar.setBounds(372, 175, 146, 14);
+        downloadProgressBar.setMinimum(0);
+        downloadProgressBar.setMaximum(documentsCount);
+        mainPanel.add(downloadProgressBar);
+        
+        JProgressBar compareProgressBar = new JProgressBar();
+        compareProgressBar.setStringPainted(true);
+        compareProgressBar.setMinimum(0);
+        compareProgressBar.setMaximum(0);
+        compareProgressBar.setBounds(372, 230, 146, 14);
+        mainPanel.add(compareProgressBar);
+        
         frmComparedocsApplication.setVisible(true);
+        frmComparedocsApplication.setBounds(100, 100, 600, 570);
+        scrollPane.setVisible(true);
+        
+        downloadButton.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                for (int i=0; i<zoologyLinks.size(); i++) {
+                    try {
+                        String link = zoologyLinks.get(i);
+                        String htmlFilePath = zoologyHtmlFiles.get(i);
+                        String txtFilePath = htmlFilePath.substring(0, htmlFilePath.lastIndexOf(".")+1) + "txt";
+                        System.out.println(txtFilePath);
+                        HtmlDownloader downloader = new HtmlDownloader(link);
+                        downloader.download(htmlFilePath);
+                        HtmlParser parser = new HtmlParser(htmlFilePath, downloader.getCharset(), link);
+                        parser.parse(txtFilePath);
+                        words.put(link, parser.getWordList());
+                        downloadProgressCount++;
+                        downloadProgressBar.setValue(downloadProgressCount);
+                    } catch (MalformedURLException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                
+                for (int i=0; i<musicLinks.size(); i++) {
+                    try {
+                        String link = musicLinks.get(i);
+                        String htmlFilePath = musicHtmlFiles.get(i);
+                        String txtFilePath = htmlFilePath.substring(0, htmlFilePath.lastIndexOf(".")+1) + "txt";
+                        System.out.println(txtFilePath);
+                        HtmlDownloader downloader = new HtmlDownloader(link);
+                        downloader.download(htmlFilePath);
+                        HtmlParser parser = new HtmlParser(htmlFilePath, downloader.getCharset(), link);
+                        parser.parse(txtFilePath);
+                        words.put(link, parser.getWordList());
+                        downloadProgressCount++;
+                        downloadProgressBar.setValue(downloadProgressCount);
+                    } catch (MalformedURLException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                
+                for (int i=0; i<itLinks.size(); i++) {
+                    try {
+                        String link = itLinks.get(i);
+                        String htmlFilePath = itHtmlFiles.get(i);
+                        String txtFilePath = htmlFilePath.substring(0, htmlFilePath.lastIndexOf(".")+1) + "txt";
+                        System.out.println(txtFilePath);
+                        HtmlDownloader downloader = new HtmlDownloader(link);
+                        downloader.download(htmlFilePath);
+                        HtmlParser parser = new HtmlParser(htmlFilePath, downloader.getCharset(), link);
+                        parser.parse(txtFilePath);
+                        words.put(link, parser.getWordList());
+                        downloadProgressCount++;
+                        downloadProgressBar.setValue(downloadProgressCount);
+                    } catch (MalformedURLException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                
+                for (String link : words.keySet()) { 
+                    System.out.println("Link: " + link + " --> words List size: " + words.get(link).size());
+                }
+            }
+        });
+        
+        compareButton.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Auto-generated method stub
+                
+            }
+        });
+        
+        
     }
-    
 }
