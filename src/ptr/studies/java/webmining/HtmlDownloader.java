@@ -1,4 +1,4 @@
-package ptr.studies.java;
+package ptr.studies.java.webmining;
 
 import java.io.BufferedReader;
 import java.io.IOException;

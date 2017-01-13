@@ -1,9 +1,10 @@
-package ptr.studies.java;
+package ptr.studies.java.webmining;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ public class WordSorter {
     private ArrayList<String> words;
     private ArrayList<String> wordsCopy;
     private ArrayList<WordCountPair> wordsSortedNaively;
-    private HashMap<String, Integer> wordsSorterOptimally;
+    private LinkedHashMap<String, Integer> wordsSortedOptimally;
 
     public WordSorter(ArrayList<String> words, int k, int thresh) {
         this.words = words;
@@ -25,7 +26,7 @@ public class WordSorter {
         this.k = k;
         this.thresh = thresh;
         this.wordsSortedNaively = new ArrayList<>();
-        this.wordsSorterOptimally = new HashMap<>();
+        this.wordsSortedOptimally = new LinkedHashMap<>();
     }
 
     public ArrayList<WordCountPair> sortNaive() {
@@ -49,56 +50,43 @@ public class WordSorter {
             if (pair.getValue() >= thresh) {
                 results.add(pair);
                 i++;
-                if (i == k) {
+                if (i == this.k) {
                     break;
                 }
             }
         }
-        System.out.println("Naive sort results (word -> count):");
-        for (WordCountPair w : results) { 
-            System.out.println(w);
-        }
         return results;
     }
 
-    public void sortOptimally() {
-//        ArrayList<WordCountPair> results = new ArrayList<>();
+    public ArrayList<WordCountPair> sortOptimally() {
+        ArrayList<WordCountPair> results = new ArrayList<>();
         
-        for (String word : words) {
-            if (wordsSorterOptimally.get(word) == null) {
-                wordsSorterOptimally.put(word, 1);
+        for (String word : wordsCopy) {
+            if (wordsSortedOptimally.get(word) == null) {
+                wordsSortedOptimally.put(word, 1);
             } else {
-                wordsSorterOptimally.put(word, wordsSorterOptimally.get(word) + 1);
+                wordsSortedOptimally.put(word, wordsSortedOptimally.get(word) + 1);
             }
         }
         
-        
-        //TODO: Pick k words if it's value is greater than thres
-        
-//        for (int i=0; i<k; i++) {
-//            if (Collections.max(wordsSorterOptimally.values()) >= thresh) {
-//                
-//            }
-//        }
-//        
-//        List<Map.Entry<String, Integer>> list = new LinkedList<>(wordsSorterOptimally.entrySet());
-//        Collections.max(wordsSorterOptimally.entrySet()):
-//        wordsSorterOptimally.values();
-//        int i = 0;
-//        for (String word : wordsSorterOptimally.keySet()) {
-//            if (wordsSorterOptimally.get(word) >= thresh) {
-//                results.add(pair);
-//                i++;
-//                if (i == k) {
-//                    break;
-//                }
-//            }
-//        }
-//        System.out.println("Naive sort results (word -> count):");
-//        for (WordCountPair w : results) { 
-//            System.out.println(w);
-//        }
-//        return results;
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(wordsSortedOptimally.entrySet());
+        Collections.sort(entryList, new Comparator<Map.Entry<String, Integer>>() {
+            
+            @Override
+            public int compare(Map.Entry<String, Integer> entry1, Map.Entry<String, Integer> entry2) {
+                // comparing entry2 to entry1 to get descending order, entry1 to entry to would give ascending order
+                return (entry2.getValue()).compareTo(entry1.getValue());
+            }
+        });
+
+        for (int i=0; i<this.k; i++) {
+            String word = entryList.get(i).getKey();
+            Integer value = entryList.get(i).getValue();
+            if (value >= thresh) {
+                results.add(new WordCountPair(word, value));
+            }
+        }
+        return results;
     }
 
     public void setWordList(ArrayList<String> list) {
