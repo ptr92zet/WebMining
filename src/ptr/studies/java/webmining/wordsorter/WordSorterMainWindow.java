@@ -3,10 +3,9 @@ package ptr.studies.java.webmining.wordsorter;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-import ptr.studies.java.webmining.HtmlDownloader;
-import ptr.studies.java.webmining.HtmlParser;
-import ptr.studies.java.webmining.WordCountPair;
-import ptr.studies.java.webmining.WordSorter;
+import ptr.studies.java.webmining.html.HtmlDownloader;
+import ptr.studies.java.webmining.html.HtmlParser;
+import ptr.studies.java.webmining.utils.WordCountPair;
 
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -21,7 +20,7 @@ import javax.swing.JPanel;
 import java.awt.Component;
 import javax.swing.JScrollPane;
 
-public class WebMiningMainWindow {
+public class WordSorterMainWindow {
 
     private JFrame frmWebminingApplication;
     private JTextField urlField;
@@ -36,7 +35,7 @@ public class WebMiningMainWindow {
     /**
      * Create the application.
      */
-    public WebMiningMainWindow() {
+    public WordSorterMainWindow() {
         initialize();
     }
 
@@ -46,7 +45,7 @@ public class WebMiningMainWindow {
     private void initialize() {
         frmWebminingApplication = new JFrame();
         frmWebminingApplication.setFont(new Font("Segoe Script", Font.PLAIN, 11));
-        frmWebminingApplication.setTitle("WebMining Application");
+        frmWebminingApplication.setTitle("WordSorter Application");
         frmWebminingApplication.setBounds(100, 100, 445, 375);
         frmWebminingApplication.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frmWebminingApplication.getContentPane().setLayout(null);

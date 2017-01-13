@@ -1,4 +1,4 @@
-package ptr.studies.java.webmining;
+package ptr.studies.java.webmining.utils;
 
 import java.util.Map;
 

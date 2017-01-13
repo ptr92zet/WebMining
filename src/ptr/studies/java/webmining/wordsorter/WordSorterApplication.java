@@ -2,13 +2,13 @@ package ptr.studies.java.webmining.wordsorter;
 
 import java.awt.EventQueue;
 
-public class WebMiningApplication {
+public class WordSorterApplication {
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    WebMiningMainWindow window = new WebMiningMainWindow();
+                    WordSorterMainWindow window = new WordSorterMainWindow();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

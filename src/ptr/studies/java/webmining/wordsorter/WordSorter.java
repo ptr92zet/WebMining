@@ -1,4 +1,4 @@
-package ptr.studies.java.webmining;
+package ptr.studies.java.webmining.wordsorter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import ptr.studies.java.webmining.utils.WordCountPair;
+
 import java.util.Set;
 
 public class WordSorter {

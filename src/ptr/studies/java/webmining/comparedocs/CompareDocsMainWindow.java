@@ -1,14 +1,10 @@
 package ptr.studies.java.webmining.comparedocs;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 
 public class CompareDocsMainWindow {
 
     private JFrame frame;
-
-
 
     /**
      * Create the application.
