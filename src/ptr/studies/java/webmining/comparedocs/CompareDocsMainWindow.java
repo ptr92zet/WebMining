@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -27,13 +28,10 @@ import ptr.studies.java.webmining.html.HtmlDownloader;
 import ptr.studies.java.webmining.html.HtmlParser;
 import ptr.studies.java.webmining.utils.SimpleWordCounter;
 
-import javax.swing.JProgressBar;
-
 public class CompareDocsMainWindow {
 
     private JFrame frmComparedocsApplication;
-    JProgressBar downloadProgressBar;
-    JProgressBar compareProgressBar;
+    JTextArea resultsArea;
     
     private ArrayList<String> zoologyLinks;
     private ArrayList<String> musicLinks;
@@ -44,12 +42,9 @@ public class CompareDocsMainWindow {
     private ArrayList<String> zoologyHtmlFiles;
     private ArrayList<String> musicHtmlFiles;
     private ArrayList<String> itHtmlFiles;
-    
-    private int downloadProgressCount;
-    private int compareProgressCount;
-    private int documentsCount;
 
-    private HashMap<String, HashMap<String, Integer>> uniqueWordsForDoc;
+    private LinkedHashMap<String, LinkedHashMap<String, Integer>> uniqueWordsForDoc;
+    private DocSimilarityComparator docComparator;
     
     /**
      * Create the application.
@@ -90,24 +85,21 @@ public class CompareDocsMainWindow {
         itLinks.add("https://en.wikipedia.org/wiki/Computer");
         itLinks.add("https://en.wikipedia.org/wiki/Central_processing_unit");
         itLinks.add("https://en.wikipedia.org/wiki/Operating_system");
-        itLinks.add("https://en.wikipedia.org/wiki/Operating_system");
         itLinks.add("https://en.wikipedia.org/wiki/Computer_programming");
+        itLinks.add("https://en.wikipedia.org/wiki/Algorithm");
         itHtmlFiles = new ArrayList<>();
         for (String link : itLinks) {
             int index = link.lastIndexOf("/") + 1;
             String fileName = link.substring(index);
             itHtmlFiles.add(HTML_FILE_PREFIX + fileName + HTML_FILE_SUFFIX);
         }
-        
-        documentsCount = zoologyLinks.size() + musicLinks.size() + itLinks.size();
-        downloadProgressCount = 0;
-        compareProgressCount = 0;
     }
+    
     /**
      * Initialize the contents of the frame.
      */
     private void initialize() {
-        uniqueWordsForDoc = new HashMap<>();
+        uniqueWordsForDoc = new LinkedHashMap<>();
         
         frmComparedocsApplication = new JFrame();
         frmComparedocsApplication.setTitle("CompareDocs Application");
@@ -379,17 +371,18 @@ public class CompareDocsMainWindow {
         });
         linksPanel.add(itLink5);
         
-        JButton downloadButton = new JButton("Download all documents and create dictionaries");
+        JButton downloadButton = new JButton("Download all documents");
         downloadButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        downloadButton.setBounds(12, 154, 348, 40);
+        downloadButton.setBounds(12, 154, 560, 40);
         mainPanel.add(downloadButton);
         
-        JButton compareButton = new JButton("Compare documents");
+        JButton compareButton = new JButton("Create dictionary and compare documents");
         compareButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        compareButton.setBounds(12, 207, 348, 40);
+        compareButton.setBounds(12, 207, 560, 40);
         mainPanel.add(compareButton);
         
-        JTextArea resultsArea = new JTextArea();
+        resultsArea = new JTextArea();
+        resultsArea.setFont(new Font("Consolas", Font.PLAIN, 11));
         resultsArea.setBounds(12, 264, 560, 190);
         //mainPanel.add(resultsArea);
         
@@ -397,30 +390,6 @@ public class CompareDocsMainWindow {
         scrollPane.setVisible(false);
         scrollPane.setBounds(12, 270, 560, 220);
         mainPanel.add(scrollPane);
-        
-        JLabel downloadProgressLabelitLinks = new JLabel("Download progress:");
-        downloadProgressLabelitLinks.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        downloadProgressLabelitLinks.setBounds(372, 154, 134, 14);
-        mainPanel.add(downloadProgressLabelitLinks);
-        
-        JLabel compareProgressLabel = new JLabel("Compare progress:");
-        compareProgressLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        compareProgressLabel.setBounds(372, 207, 134, 14);
-        mainPanel.add(compareProgressLabel);
-        
-        downloadProgressBar = new JProgressBar();
-        downloadProgressBar.setStringPainted(true);
-        downloadProgressBar.setBounds(372, 175, 146, 14);
-        downloadProgressBar.setMinimum(0);
-        downloadProgressBar.setMaximum(documentsCount);
-        mainPanel.add(downloadProgressBar);
-        
-        compareProgressBar = new JProgressBar();
-        compareProgressBar.setStringPainted(true);
-        compareProgressBar.setMinimum(0);
-        compareProgressBar.setMaximum(0);
-        compareProgressBar.setBounds(372, 230, 146, 14);
-        mainPanel.add(compareProgressBar);
         
         frmComparedocsApplication.setVisible(true);
         frmComparedocsApplication.setBounds(100, 100, 600, 570);
@@ -461,19 +430,21 @@ public class CompareDocsMainWindow {
                     }
                 }
                 
-                for (String link : uniqueWordsForDoc.keySet()) { 
-                    System.out.println("Link: " + link + " --> uniqueWordsForDoc List size: " + uniqueWordsForDoc.get(link).size());
-                }
-                
             }
         });
         
         compareButton.addActionListener(new ActionListener() {
             
             @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
+            public void actionPerformed(ActionEvent e) {              
+                docComparator = new DocSimilarityComparator(uniqueWordsForDoc);
+                docComparator.createDictionary();
+                docComparator.createVectors();
+                docComparator.makeVectorPairs();
                 
+                resultsArea.append(docComparator.printMostSimilar());
+                resultsArea.append("\n");
+                resultsArea.append(docComparator.printLessSimilar());
             }
         });        
     }
@@ -481,14 +452,13 @@ public class CompareDocsMainWindow {
     
     private void processDocument(String docLink, String docHtmlFile) throws MalformedURLException, IOException {
         String txtFilePath = docHtmlFile.substring(0, docHtmlFile.lastIndexOf(".")+1) + "txt";
-        System.out.println(txtFilePath);
         HtmlDownloader downloader = new HtmlDownloader(docLink);
         downloader.download(docHtmlFile);
         HtmlParser parser = new HtmlParser(docHtmlFile, downloader.getCharset(), docLink);
         parser.parse(txtFilePath);
         SimpleWordCounter wordCounter = new SimpleWordCounter(parser.getWordList());
         uniqueWordsForDoc.put(docLink, wordCounter.count());
-        downloadProgressCount++;
-        downloadProgressBar.setValue(downloadProgressCount);
+        
+        resultsArea.append("Downloaded and parsed: " + docLink + "\n");
     }
 }

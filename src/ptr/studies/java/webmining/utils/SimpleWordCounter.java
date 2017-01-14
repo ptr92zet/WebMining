@@ -2,6 +2,7 @@ package ptr.studies.java.webmining.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class SimpleWordCounter {
 
@@ -11,8 +12,8 @@ public class SimpleWordCounter {
         this.words = wordList;
     }
     
-    public HashMap<String, Integer> count() {
-        HashMap<String, Integer> wordsCounted = new HashMap<>();
+    public LinkedHashMap<String, Integer> count() {
+        LinkedHashMap<String, Integer> wordsCounted = new LinkedHashMap<>();
         for (String word : words) {
             if (wordsCounted.get(word) == null) {
                 wordsCounted.put(word, 1);
