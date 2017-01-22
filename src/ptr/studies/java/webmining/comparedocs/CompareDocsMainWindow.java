@@ -57,7 +57,7 @@ public class CompareDocsMainWindow {
     private void initializeLinksAndFiles() {
         zoologyLinks = new ArrayList<>();
         zoologyLinks.add("https://en.wikipedia.org/wiki/Elephant");
-        zoologyLinks.add("https://en.wikipedia.org/wiki/Giraffe");
+        zoologyLinks.add("https://en.wikipedia.org/wiki/Elephant");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Gorilla");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Bear");
         zoologyLinks.add("https://en.wikipedia.org/wiki/Tiger");
