@@ -116,10 +116,14 @@ public class LinkAnalyzerMainWindow {
                 try {
                     String firstLink = urlField.getText();
                     int n = Integer.parseInt(nField.getText());
-                    String hostIp = InetAddress.getByName(new URI(firstLink).getHost()).getHostAddress();
-                    System.out.println("Host IP before starting analysis: " + hostIp);
-                    LinkAnalyzer la = new LinkAnalyzer(n, hostIp);
-                    LinkAnalyzer.analyze(firstLink, n);
+                    InetAddress host = InetAddress.getByName((new URI(firstLink)).getHost());
+                    String hostName = host.getHostName(); 
+                    String hostIpAddr = host.getHostAddress();
+                    System.out.println("Host IP before starting analysis: " + hostIpAddr);
+                    LinkAnalyzer la = new LinkAnalyzer(n, hostIpAddr);
+                    LinkAnalyzer.analyze(firstLink, hostName, hostIpAddr, n);
+                    System.out.println("");
+                    System.out.println("FINALLY FINISHED!!!");
                 } catch (MalformedURLException e1) {
                     e1.printStackTrace();
                 } catch (IOException e2) {

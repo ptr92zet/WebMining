@@ -55,7 +55,10 @@ public class HtmlParser {
         Elements linkTags = doc.getElementsByTag("a");
         for (Element el : linkTags) { 
             nextPageUrl = el.attr("href");
-            if (!nextPageUrl.startsWith("javascript")) {
+            if (! (nextPageUrl.startsWith("javascript") || nextPageUrl.startsWith("mailto"))) {
+                if (nextPageUrl == null || nextPageUrl.length() == 0) {
+                    System.out.println(">>>>>>>>>>>>> Found empty link while parsing! " + nextPageUrl);
+                }
                 links.add(nextPageUrl);
             }
         }
