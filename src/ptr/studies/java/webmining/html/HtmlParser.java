@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
+import org.jsoup.select.Elements;
 
 public class HtmlParser {
 
@@ -47,6 +48,20 @@ public class HtmlParser {
         writeProcessedFile(txtContent);
     }
 
+    public ArrayList<String> getLinks() throws IOException {
+        String nextPageUrl = "";
+        ArrayList<String> links = new ArrayList<>();
+        Document doc = Jsoup.parse(htmlFile.toFile(), charset, baseUrl);
+        Elements linkTags = doc.getElementsByTag("a");
+        for (Element el : linkTags) { 
+            nextPageUrl = el.attr("href");
+            if (!nextPageUrl.startsWith("javascript")) {
+                links.add(nextPageUrl);
+            }
+        }
+        return links;
+    }
+    
     public ArrayList<String> getWordList() {
         return this.words;
     }
