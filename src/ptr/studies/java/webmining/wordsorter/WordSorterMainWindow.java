@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 import javax.swing.JTextArea;
 import javax.swing.JPanel;
-import java.awt.Component;
 import javax.swing.JScrollPane;
 
 public class WordSorterMainWindow {

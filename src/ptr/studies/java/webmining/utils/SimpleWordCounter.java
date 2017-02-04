@@ -1,7 +1,6 @@
 package ptr.studies.java.webmining.utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class SimpleWordCounter {

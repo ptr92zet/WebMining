@@ -1,7 +1,5 @@
 package ptr.studies.java.webmining.utils;
 
-import java.util.Map;
-
 public class WordCountPair implements Comparable<WordCountPair>{
     private final String key;
     private int value;

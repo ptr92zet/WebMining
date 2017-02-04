@@ -2,8 +2,6 @@ package ptr.studies.java.webmining.comparedocs;
 
 import java.awt.EventQueue;
 
-import javax.swing.JFrame;
-
 public class CompareDocsApplication {
 
     /**

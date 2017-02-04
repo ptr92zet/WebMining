@@ -2,30 +2,30 @@ package ptr.studies.java.webmining.links;
 
 import javax.swing.JFrame;
 import javax.swing.JButton;
-import java.awt.BorderLayout;
 import javax.swing.JTextField;
-
-import ptr.studies.java.webmining.html.HtmlDownloader;
-import ptr.studies.java.webmining.html.HtmlParser;
-
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 public class LinkAnalyzerMainWindow {
 
-    private final String HTML_FILE_PREFIX = System.getProperty("user.home") + "\\Desktop\\webmining_docs\\links\\";
-    private final String HTML_FILE_SUFFIX = ".html";
-    private final String FIRST_HTML_NAME = "first_html";
+    private final String slash = File.separator;   
+    private final String DOWNLOAD_DIR_PATH = System.getProperty("user.home") + "\\Desktop\\webmining_docs\\links\\";
+    private final String SAME_IP_FILE = DOWNLOAD_DIR_PATH + "FILES_WITH_LINKS" + slash + "sameIp.txt";
+    private final String EXTERNAL_IP_FILE = DOWNLOAD_DIR_PATH + "FILES_WITH_LINKS" + slash + "externalIp.txt";
     
     private JFrame frmLinkanalyzerapplication;
     private JTextField urlField;
@@ -34,9 +34,6 @@ public class LinkAnalyzerMainWindow {
     
     private JTextArea sameIPArea;
     private JTextArea externalArea;
-
-    private HtmlDownloader downloader;
-    private HtmlParser parser;
     
     /**
      * Create the application.
@@ -111,6 +108,9 @@ public class LinkAnalyzerMainWindow {
         externalScrollPane.setBounds(10, 334, 564, 167);
         frmLinkanalyzerapplication.getContentPane().add(externalScrollPane);
 
+        Path sameIpFilePath = Paths.get(SAME_IP_FILE);
+        Path externalIpFilePath = Paths.get(EXTERNAL_IP_FILE);
+                
         downloadButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -124,6 +124,8 @@ public class LinkAnalyzerMainWindow {
                     LinkAnalyzer.analyze(firstLink, hostName, hostIpAddr, n);
                     System.out.println("");
                     System.out.println("FINALLY FINISHED!!!");
+                    sameIPArea.setText(readLinksFromFile(sameIpFilePath));
+                    externalArea.setText(readLinksFromFile(externalIpFilePath));
                 } catch (MalformedURLException e1) {
                     e1.printStackTrace();
                 } catch (IOException e2) {
@@ -133,5 +135,20 @@ public class LinkAnalyzerMainWindow {
                 }
             }
         });
+    }
+    
+    private String readLinksFromFile(Path filePath) {
+        StringBuilder builder = new StringBuilder();
+        ArrayList<String> lines = new ArrayList<>();
+        try {
+            lines = (ArrayList<String>) Files.readAllLines(filePath);
+            for (String line : lines) {
+                builder.append(line + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Cannot read from file: " + filePath.toString());
+        }
+        return builder.toString();
     }
 }

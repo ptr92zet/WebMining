@@ -59,7 +59,7 @@ public class HtmlParser {
                 if (nextPageUrl == null || nextPageUrl.length() == 0) {
                     System.out.println(">>>>>>>>>>>>> Found empty link while parsing! " + nextPageUrl);
                 }
-                links.add(nextPageUrl);
+                links.add(nextPageUrl.trim());
             }
         }
         return links;

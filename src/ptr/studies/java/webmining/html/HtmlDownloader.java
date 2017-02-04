@@ -28,7 +28,7 @@ public class HtmlDownloader {
         PrintWriter writer = null;
         String line;
         try {
-            this.charset = recognizePageCharser();
+            this.charset = recognizePageCharset();
             URLConnection connection = url.openConnection();
             connection.connect();
             htmlStream = connection.getInputStream();
@@ -37,6 +37,10 @@ public class HtmlDownloader {
             while ((line = reader.readLine()) != null) {
                 writer.println(line);
             }
+        } catch (org.jsoup.HttpStatusException h) {
+            System.out.println("ERROR 404: Page is unavailable: " + url.toString());
+        } catch (org.jsoup.UnsupportedMimeTypeException h) {
+            System.out.println("************************ UnsupportedMimeTypeException: Link: " + url.toString() + " points to unsupported resource type! Skipping link...");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -61,97 +65,9 @@ public class HtmlDownloader {
         return this.charset;
     }
 
-    private String recognizePageCharser() throws IOException {
+    private String recognizePageCharset() throws IOException {
         Document doc = Jsoup.connect(url.toString()).get();
         Charset charset = doc.charset();
         return charset.toString();
     }
 }
-
-// public void processTxtFile() throws IOException {
-// String text = htmlResponseJsoup.toLowerCase();
-// text = text.replaceAll("[.,:;-]", " ");
-// text = text.replaceAll("[!?–]", " ");
-// text = text.replaceAll("[()]", " ");
-// text = text.replaceAll("[\\[\\]]", " ");
-// text = text.replaceAll("[{}]", " ");
-// text = text.replaceAll("[<>]", " ");
-// text = text.replaceAll("\\.\\.\\.", " ");
-// text = text.replaceAll("…", " ");
-// //processedTxtContent = text.replaceAll("\\.( )+", "");
-// processedTxtContent = text;
-// writeProcessedFile(processedTxtContent);
-// }
-//
-// private void readHtmlResponse() {
-// try {
-// readWithUrlConnection();
-// readWithJsoup();
-// } catch (IOException e) {
-// e.printStackTrace();
-// }
-// }
-//
-// private void readWithUrlConnection() throws IOException {
-// URLConnection connection = url.openConnection();
-// connection.connect();
-// InputStream htmlStream = connection.getInputStream();
-// BufferedReader reader = new BufferedReader(new
-// InputStreamReader(htmlStream));
-//
-// String line;
-// StringBuilder response = new StringBuilder();
-// while ((line = reader.readLine()) != null) {
-// response.append(line + "\n");
-// }
-// reader.close();
-// this.htmlResponse = response.toString();
-// }
-//
-// private void readWithJsoup() throws IOException {
-// Document document = Jsoup.parse(url.openStream(), null, url.toString());
-//
-//// InputStream is = url.openStream();
-//// BufferedReader reader = new BufferedReader(new InputStreamReader(is,
-// Charset.forName("UTF-8")));
-//// StringBuilder builder = new StringBuilder();
-//// String line = "";
-//// while ((line = reader.readLine()) != null) {
-//// builder.append(line);
-//// }
-//// String doc = Jsoup.clean(builder.toString(), url.toString(), new
-// Whitelist().none(), new OutputSettings().prettyPrint(false));
-//
-// Element head = document.head();
-// Element body = document.body();
-// String cleanedHead = Jsoup.clean(head.text(), url.toString(), new
-// Whitelist().none(),
-// new OutputSettings().prettyPrint(false));
-// String cleanedBody = Jsoup.clean(body.text(), url.toString(), new
-// Whitelist().none(),
-// new OutputSettings().prettyPrint(false));
-//
-// this.htmlResponseJsoup = cleanedHead + cleanedBody;
-//// this.htmlResponseJsoup = doc;
-// }
-//
-// private void writeHtmlFile(String content) throws IOException {
-// if (!Files.exists(htmlFile)) {
-// Files.createFile(htmlFile);
-// }
-// Files.write(htmlFile, content.getBytes());
-// }
-//
-// private void writeTxtFile(String content) throws IOException {
-// if (!Files.exists(txtFile)) {
-// Files.createFile(txtFile);
-// }
-// Files.write(txtFile, content.getBytes());
-// }
-//
-// private void writeProcessedFile(String content) throws IOException {
-// if (!Files.exists(processedFile)) {
-// Files.createFile(processedFile);
-// }
-// Files.write(processedFile, content.getBytes());
-// }
