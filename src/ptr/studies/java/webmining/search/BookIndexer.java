@@ -3,6 +3,7 @@ package ptr.studies.java.webmining.search;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.UnmappableCharacterException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +25,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.Lock;
+import org.apache.lucene.util.Version;
 
 public class BookIndexer {
 
@@ -52,29 +54,87 @@ public class BookIndexer {
 
     public void indexByTitles() {
         initialize();
-        
+
         int filesIndexed = 0;
-        
         Directory dir = null;
         IndexWriter writer = null;
+        List<String> lines = new ArrayList<>();
         
         try {
             dir = FSDirectory.open(titlesIndexDir);
             writer = new IndexWriter(dir, config);
             for (String book : bookFiles) {
+                Path path = Paths.get(BOOKS_DIR + book);
+                try {
+                    lines = Files.readAllLines(path, Charset.defaultCharset());
+                } catch (UnmappableCharacterException e) {
+                    System.out.println("UnmappableCharacterException! Skipping file: " + path.toString());
+                    continue;
+                }
+                String TITLE = "";
                 
-                if (filesIndexed == 100) {
-                    break;
+//                if (filesIndexed == 100) {
+//                    break;
+//                }
+                
+                for (int i=0; i<lines.size(); i++) {
+                    String line = lines.get(i);
+                    if (line.startsWith("Title:")) {
+                        TITLE = line.split("Title:")[1].trim();
+                        break;
+                    }
                 }
                 
+                Document doc = new Document();
+                doc.add(new Field("title", TITLE, TextField.TYPE_STORED));
+                writer.addDocument(doc);
+                writer.commit();
+                System.out.println("Indexing file by TITLE (" + filesIndexed + "): " + path.toString() + " ---> \"" + TITLE + "\"");
+                
+                filesIndexed++;
+            }
+            writer.close();
+            dir.close();
+        } catch (IOException e ) {
+            e.printStackTrace();
+            try {
+                writer.close();
+                dir.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+    
+    public void indexByTitlesAndText() {
+        initialize();
+        
+        int filesIndexed = 0;
+        Directory dir = null;
+        IndexWriter writer = null;
+        List<String> lines = new ArrayList<>();
+        
+        try {
+            dir = FSDirectory.open(titlesTextIndexDir);
+            writer = new IndexWriter(dir, config);
+            for (String book : bookFiles) {
                 Path path = Paths.get(BOOKS_DIR + book);
-                System.out.println("Reading file: " + path.toString());
-                List<String> lines = Files.readAllLines(path, Charset.defaultCharset());
+                System.out.println("Indexing file by TITLE and TEXT (" + (filesIndexed + 1) + "): " + path.toString());
+                try {
+                    lines = Files.readAllLines(path, Charset.defaultCharset());
+                } catch (UnmappableCharacterException e) {
+                    System.out.println("UnmappableCharacterException! Skipping file: " + path.toString());
+                    continue;
+                }
                 String TITLE = "";
                 String TEXT = "";
                 int titleIndex = 0;
                 int textIndex = 0;
                 StringBuilder textBuilder = new StringBuilder();
+                
+                if (filesIndexed == 100) {
+                    break;
+                }
                 
                 for (int i=0; i<lines.size(); i++) {
                     String line = lines.get(i);
@@ -84,7 +144,6 @@ public class BookIndexer {
                         break;
                     }
                 }
-                
                 for (int i=titleIndex; i<lines.size(); i++) {
                     String line = lines.get(i);
                     if (line.startsWith("*** START OF")) {
@@ -92,16 +151,14 @@ public class BookIndexer {
                         break;
                     }
                 }
-                
                 for (int i=textIndex; i<lines.size(); i++) {
                     textBuilder.append(lines.get(i) + "\n");
                 }
                 
                 TEXT = textBuilder.toString();
-                
                 Document doc = new Document();
-                doc.add(new TextField("title", TITLE, Field.Store.YES));
-                doc.add(new TextField("text", TEXT, Field.Store.YES));
+                doc.add(new Field("title", TITLE, TextField.TYPE_STORED));
+                doc.add(new Field("text", TEXT, TextField.TYPE_STORED));
                 writer.addDocument(doc);
                 writer.commit();
                 
@@ -110,22 +167,17 @@ public class BookIndexer {
             writer.close();
             dir.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             try {
                 writer.close();
                 dir.close();
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         }
 
     }
 
-    public void indexByTitlesAndText() {
-        initialize();
-    }
     
     public StandardAnalyzer getAnalyzer() {
         return this.analyzer;
