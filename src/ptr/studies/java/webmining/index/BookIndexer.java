@@ -1,4 +1,4 @@
-package ptr.studies.java.webmining.search;
+package ptr.studies.java.webmining.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,9 +132,9 @@ public class BookIndexer {
                 int textIndex = 0;
                 StringBuilder textBuilder = new StringBuilder();
                 
-                if (filesIndexed == 100) {
-                    break;
-                }
+//                if (filesIndexed == 100) {
+//                    break;
+//                }
                 
                 for (int i=0; i<lines.size(); i++) {
                     String line = lines.get(i);

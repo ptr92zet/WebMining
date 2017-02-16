@@ -3,6 +3,7 @@ package ptr.studies.java.webmining.links;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 
 import ptr.studies.java.webmining.html.HtmlDownloader;
 import ptr.studies.java.webmining.html.HtmlParser;
+import ptr.studies.java.webmining.index.PageIndexer;
 
 public class LinkAnalyzer {
     
@@ -28,7 +30,6 @@ public class LinkAnalyzer {
     private static String hostIp;
     private static Path sameIpFilePath;
     private static Path externalIpFilePath;
-
     
     public LinkAnalyzer(int n, String hostIpAddress) throws URISyntaxException, IOException {
         hostIp = hostIpAddress;
@@ -44,7 +45,7 @@ public class LinkAnalyzer {
         Files.write(sameIpFilePath, "\n".getBytes());
         Files.write(externalIpFilePath, "\n".getBytes());
     }
-
+    
     public static void analyze(String linkUrl, String resolvedHost, String resolvedIp, int nDepth) throws URISyntaxException, IOException {
         count++;
         ArrayList<String> links = new ArrayList<>();
@@ -122,7 +123,7 @@ public class LinkAnalyzer {
         }
         System.out.println("Exiting analyze called with params: N: " + nDepth + ", LINK: " + linkUrl);
     }
-    
+
     
     private static String resolveRelativeLink(String relativeLink, String currentHostName) {
         String formattedLink = "";

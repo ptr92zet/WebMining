@@ -5,23 +5,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import java.awt.Font;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+
+import ptr.studies.java.webmining.index.BookIndexer;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

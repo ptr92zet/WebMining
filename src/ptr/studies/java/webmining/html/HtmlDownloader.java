@@ -15,7 +15,8 @@ import org.jsoup.nodes.Document;
 public class HtmlDownloader {
 
     private URL url;
-    private String charset = "UTF-8";
+    private Charset charset = Charset.defaultCharset();
+    private String charsetName = charset.name();
 
     public HtmlDownloader(String pageAddress) throws MalformedURLException {
         this.url = new URL(pageAddress);
@@ -28,12 +29,12 @@ public class HtmlDownloader {
         PrintWriter writer = null;
         String line;
         try {
-            this.charset = recognizePageCharset();
+            this.charsetName = recognizePageCharset();
             URLConnection connection = url.openConnection();
             connection.connect();
             htmlStream = connection.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(htmlStream, charset));
-            writer = new PrintWriter(htmlFilePath, charset);
+            reader = new BufferedReader(new InputStreamReader(htmlStream, charsetName));
+            writer = new PrintWriter(htmlFilePath, charsetName);
             while ((line = reader.readLine()) != null) {
                 writer.println(line);
             }
@@ -62,12 +63,16 @@ public class HtmlDownloader {
     }
 
     public String getCharset() {
-        return this.charset;
+        return this.charsetName;
     }
 
+    public Charset getCharsetObj() {
+        return this.charset;
+    }
+    
     private String recognizePageCharset() throws IOException {
         Document doc = Jsoup.connect(url.toString()).get();
-        Charset charset = doc.charset();
+        charset = doc.charset();
         return charset.toString();
     }
 }
